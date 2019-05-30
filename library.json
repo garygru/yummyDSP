@@ -1,0 +1,14 @@
+{
+  "name": "yummyDSP",
+  "keywords": "dsp, audio, i2s, esp32",
+  "description": "A floating point audio DSP library for Arduino Espressif ESP32 and probably other 32 bit machines",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/garygru/yummyDSP"
+  },
+  "version": "0.1.0",
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}
+
