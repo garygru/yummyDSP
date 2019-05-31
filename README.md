@@ -1,10 +1,10 @@
 # yummyDSP
-is an Arduino audio DSP library for the [Espressif ESP32](https://www.espressif.com/en/products/hardware/esp32/overview). 
+yummyDSP is an Arduino audio DSP library for the [Espressif ESP32](https://www.espressif.com/en/products/hardware/esp32/overview). 
 Main focus is **realtime** processing of audio signals for e.g. a guitar stomp box.  
 Although there is some basic synth stuff inside, there are better audio synthesis libraries out there. 
 For web radios or similar use the [Espressif Systems Audio Development Framework](https://github.com/espressif/esp-adf)
 
-The Library is still in an early state!
+The Library is in an early state, still lot's of known issues! Anyone is invited to help, extend and bring in his expertise. 
 
 The idea is to have modular blocks which are simply arranged in a processing tree to form the signal chain. 
 These processing blocks are called *Nodes* inspired by Apple's *Audio Unit* framework. They are processed one after another in the sequence in which they are added to the tree:
@@ -20,7 +20,7 @@ dsp.add(&sat);
 sample = dsp.process(sample);
 
 ```
-This is a pretty high level view on signal processing but also allows to dig deeper and write your own nodes or just add the code in the sample loop. 
+This allows for a pretty high level view on signal processing but also to dig deeper and write your own nodes or directly add dsp code in the sample loop. 
 
 Currently there a just a few nodes implemented (more to come)
 
