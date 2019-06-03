@@ -1,8 +1,8 @@
 # yummyDSP
 yummyDSP is an Arduino audio DSP library for the [Espressif ESP32](https://www.espressif.com/en/products/hardware/esp32/overview). 
 Main focus is **realtime** processing of audio signals for e.g. a guitar stomp box.  
-Although there is some basic synth stuff inside, there are better audio synthesis libraries out there. 
-For web radios or similar use the [Espressif Systems Audio Development Framework](https://github.com/espressif/esp-adf)
+Although there is some basic synth stuff inside, there are probably better audio synthesis libraries out there. 
+For web radios, player, recorder or similar have a look at the [Espressif Systems Audio Development Framework](https://github.com/espressif/esp-adf).
 
 The Library is in an early state, still lot's of known issues! Anyone is invited to help, extend and bring in his expertise. 
 
@@ -35,7 +35,7 @@ Currently you also need an ADC or audio codec connected via I2S.
 *I didn't manage yet to make the built-in ADC work with I2S DMA without breaking the DAC. If someone has an advice, please drop me a line*. 
  
 
-###Installation
+### Installation
 - Install the [Arduino ESP32 Core](https://github.com/espressif/arduino-esp32) as described. 
 - Download this library into your Arduino library folder
 - Run the example code and fiddle around 
