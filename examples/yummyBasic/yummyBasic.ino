@@ -3,7 +3,7 @@
 
     Author: Gary Grutzek
 
- */
+*/
 
 #include "Arduino.h"
 #include "driver/gpio.h"
@@ -14,10 +14,8 @@
 
 // I2S
 int fs = 48000;
-const int CHANNEL_COUNT = 2; // not yet supported
-const int SAMPLE_BUFFERSIZE = 32; // per channel sample buffer
-const int CHANNELS = 2;
-int32_t sampleBuffer[CHANNELS * SAMPLE_BUFFERSIZE];
+const int channelCount = 2;
+int32_t sampleBuffer[channelCount * AudioDriver::BufferSize];
 
 #define I2S_PORT_NUM (I2S_NUM_0)
 
@@ -27,17 +25,16 @@ int32_t sampleBuffer[CHANNELS * SAMPLE_BUFFERSIZE];
 #define I2S_DOUT_PIN 14
 #define I2S_DIN_PIN 13
 #define CODEC_ENABLE_PIN 33
-
+#define POT_PIN 4 
 
 AudioDriver codec;
-DSP dsp;
+YummyDSP dsp;
 // the processing nodes
 FilterNode lp;
 FilterNode hp;
 WaveShaperNode sat;
-DelayNode dly;
 
-float pot=0.f;
+float pot = 0.f;
 
 
 void audioTask(void *);
@@ -62,13 +59,13 @@ void setup() {
 
   // setup some filter nodes
   // low pass
-  lp.begin(fs);
+  lp.begin(fs, channelCount);
   lp.setupFilter(FilterNode::LPF, 5000, 0.7);
   // hi pass
-  hp.begin(fs);
+  hp.begin(fs, channelCount);
   hp.setupFilter(FilterNode::HPF, 10, 1.0);
   // saturation
-  sat.begin(fs);
+  sat.begin(fs, channelCount);
   sat.setDrive(0.1f);
 
   // add nodes to audio processing tree
@@ -89,46 +86,37 @@ void audioTask(void *) {
   //
   Serial.print("\nAudio task");
 
-  int i2s_read_len =  CHANNEL_COUNT * SAMPLE_BUFFERSIZE; // ??* sizeof(int32_t);??
-
-  int32_t* i2s_read_buff = (int32_t*) calloc(i2s_read_len, sizeof(int32_t));
-  int32_t* i2s_write_buff = (int32_t*) calloc(i2s_read_len, sizeof(int32_t));
-
-  static const float scale = 0.0000000004656612873077392578125f; // is 1.0f/2^31
+  int i2s_buf_len =  channelCount * AudioDriver::BufferSize;
+  int32_t* i2s_read_buff = (int32_t*) calloc(i2s_buf_len, sizeof(int32_t));
+  int32_t* i2s_write_buff = (int32_t*) calloc(i2s_buf_len, sizeof(int32_t));
 
   int err = 0;
   uint bytesWritten = 0;
   uint bytesRead = 0;
-  float sample=0;
+  float sample = 0;
 
   while (true) {
 
-    err = i2s_read(I2S_PORT_NUM, (void*) i2s_read_buff, i2s_read_len * sizeof(int32_t), &bytesRead, 500);
+    err = i2s_read(I2S_PORT_NUM, (void*) i2s_read_buff, i2s_buf_len * sizeof(int32_t), &bytesRead, 500);
 
-    if (err || bytesRead < (i2s_read_len * sizeof(int32_t))) {
-      Serial.println("Read Error");
-      Serial.println(err);
-      Serial.println(bytesRead);
+    // sample loop
+    for (int i = 0; i < AudioDriver::BufferSize; i++) {
+
+      // channel loop
+      for (int ch = 0; ch < channelCount; ch++) {
+        // read from I2S read buffer and convert to float
+        sample = int2Float(i2s_read_buff[2*i+ch]);
+
+        // processing is done sequentially in the nodes. that's all!
+        sample = dsp.process(sample, ch);
+
+        // convert back to signed integer
+        sampleBuffer[2*i+ch] = float2Int(sample);
+      }
     }
 
-    for (int i = 0; i < CHANNEL_COUNT * SAMPLE_BUFFERSIZE; i++) {
+    err = i2s_write(I2S_PORT_NUM, (const char *)&sampleBuffer, i2s_buf_len * sizeof(int32_t), &bytesWritten, 500);
 
-      // read from I2S read buffer and convert to float
-      sample = (float) (i2s_read_buff[i] * scale);
-
-      // processing is done sequentially in the nodes. that's all!
-      sample = dsp.process(sample);
-
-      // convert back to signed integer
-      sampleBuffer[i] = float_to_int(sample);
-    }
-
-    err = i2s_write(I2S_PORT_NUM, (const char *)&sampleBuffer, CHANNEL_COUNT * SAMPLE_BUFFERSIZE * sizeof(int32_t), &bytesWritten, 500);
-
-    if (bytesWritten < 1) {
-      Serial.print("i2s timeout/error: ");
-      Serial.println(bytesWritten);
-    }
   }
 
   // should never be executed
@@ -141,14 +129,15 @@ void audioTask(void *) {
 
 // control stuff here
 void loop() {
-  
-  delay(1);
 
-  // e.g. a potentiometer on GPIO 4
-  pot = pot*0.9 + (float)analogRead(4)/4096 * 0.1;
+  delay(5);
 
-  float f0 = pot * 10000.f;
-  //  lp.updateFilter(f0);
+  // a potentiometer on GPIO 4, scaled and filtered
+  pot = pot * 0.9 + (float)analogRead(POT_PIN) / 4096 * 0.1;
+
+//  float f0 = pot * 10000.f;
+//  lp.updateFilter(f0);
+//  sat.setDrive(pot);
 
 }
 

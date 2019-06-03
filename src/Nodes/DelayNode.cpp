@@ -11,15 +11,15 @@ DelayNode::DelayNode() {
 	; // be sure to call begin(fs)
 }
 
-DelayNode::DelayNode(int sampleRate) {
-	this->begin(fs);
+DelayNode::DelayNode(int sampleRate, int channelCount) {
+	this->begin(fs, channelCount);
 }
 
 DelayNode::~DelayNode() {
 	;
 }
 
-void DelayNode::begin(int sampleRate) {
+void DelayNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
 	maxDelayTimeMs = (int)((MAX_DELAY_LEN * 1000) / fs);
 	interpolator = new Interpolator(fs, 50);
@@ -28,17 +28,17 @@ void DelayNode::begin(int sampleRate) {
 	readCnt = MAX_DELAY_LEN - (int) delaySamples[kCurrent];
 	writeCnt = 0;
 
-	lp.begin(fs);
+	lp.begin(fs, channelCount);
 	lp.setupFilter(FilterNode::LPF, 1000, 0.7);
 
 }
 
 
-float DelayNode::processSample(float sample) {
+float DelayNode::processSample(float sample, int channel) {
 	interpolator->process();
 
 	float fb = 1.5f * buffer[readCnt];
-	fb = lp.processSample(fb);
+	fb = lp.processSample(fb, channel);
 
 	buffer[writeCnt] = (sample + fb)/2;
 	writeCnt++;
@@ -57,7 +57,6 @@ float DelayNode::processSample(float sample) {
 	float y = buffer[readCnt];
 
 	// wet signal low pass
-
 
 	return mix[kCurrent] * y + (1.f-mix[kCurrent]) * sample;
 }

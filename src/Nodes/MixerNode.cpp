@@ -13,15 +13,15 @@ MixerNode::MixerNode() {
 	; // be sure to call begin(fs)
 }
 
-MixerNode::MixerNode(int fs) {
-	this->begin(fs);
+MixerNode::MixerNode(int fs, int channelCount) {
+	this->begin(fs, channelCount);
 }
 
 MixerNode::~MixerNode() {
 	;
 }
 
-void MixerNode::begin(int sampleRate) {
+void MixerNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
 	interpolator = new Interpolator(fs, 50);
 	setVolume(0.f, false);
@@ -31,7 +31,7 @@ void MixerNode::begin(int sampleRate) {
 //
 // return smoothed volume
 //
-float MixerNode::processSample(float sample) {
+float MixerNode::processSample(float sample, int channel) {
 	interpolator->process();
 	return sample * volume[kCurrent];
 }

@@ -12,22 +12,22 @@ WaveShaperNode::WaveShaperNode() {
 	; // be sure to call begin(fs)
 }
 
-WaveShaperNode::WaveShaperNode(int sampleRate) {
-	this->begin(fs);
+WaveShaperNode::WaveShaperNode(int sampleRate, int channelCount) {
+	this->begin(fs, channelCount);
 }
 
 WaveShaperNode::~WaveShaperNode() {
 	;
 }
 
-void WaveShaperNode::begin(int sampleRate) {
+void WaveShaperNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
 	interpolator = new Interpolator(fs, 50);
 	setDrive(0.f, false);
 }
 
 
-float WaveShaperNode::processSample(float sample) {
+float WaveShaperNode::processSample(float sample, int channel) {
 	interpolator->process();
 	return fasttanh(sample * drive[kCurrent] * 30.f);
 }

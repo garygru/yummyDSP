@@ -22,12 +22,12 @@
 
 
 
-class DSP {
+class YummyDSP {
 
   public:
-    DSP();
-	DSP(int fs);
-    ~DSP();
+    YummyDSP();
+	YummyDSP(int fs);
+    ~YummyDSP();
 
     void begin(int fs);
     int getSampleRate() { return fs; }
@@ -38,12 +38,11 @@ class DSP {
 	
 	void addNode(AudioNode *node);
 	
-	float process(float x);
+	float process(float sample, int channel);
 
   protected:
 	std::list<AudioNode *> nodelist;
 	
-	int scale; // TODO: scale factor for fixed point integer output
     int fs; // sample rate
 
 };

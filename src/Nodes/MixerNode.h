@@ -20,12 +20,12 @@ class MixerNode : public AudioNode {
 public:
 
 	MixerNode();
-	MixerNode(int fs);
+	MixerNode(int fs, int channelCount);
 	~MixerNode();
 
-	void begin(int fs);
+	void begin(int fs, int channelCount);
 
-	float processSample(float sample);
+	float processSample(float sample, int channel);
 
 
 	float getVolume() {

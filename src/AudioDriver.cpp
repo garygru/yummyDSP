@@ -40,28 +40,20 @@
 
 #include "AudioDriver.h"
 
-int32_t round_float_int(float in){
-    if(in >= 0.5)
-        return (int32_t) in + 1;
-    else
-        return (int32_t) in;
+
+const float AudioDriver::ScaleFloat2Int = 8388608.f; // 2^23
+const float AudioDriver::ScaleInt2Float = 0.0000000004656612873077392578125f; // 1 / 2^31
+
+
+float int2Float(int32_t sample) {
+	return (float)(sample * AudioDriver::ScaleInt2Float);
 }
 
-int32_t hard_limit(int32_t val)
-{
-        if (val > 8388607)
-            val = 8388607;
-        if (val < -8388608)
-            val = -8388608;
-
-        return  val;
-}
-
-int32_t float_to_int(float sample)
-{
-    const float mul = (8388608.0f);
-	sample *= mul;
-	return hard_limit(round_float_int(sample)) << 8;
+int32_t float2Int(float sample) {
+    sample *= AudioDriver::ScaleFloat2Int;
+    int32_t y = (int32_t)(sample >= 0.5)? sample+1 : sample;
+	y = constrain(y, -AudioDriver::ScaleFloat2Int, AudioDriver::ScaleFloat2Int-1);
+	return y << 8;
 }
 
 
@@ -75,14 +67,7 @@ int AudioDriver::setup(int fs, int bitClkPin, int lrClkPin, int dataOutPin, int 
 	pinMode(enablePin, OUTPUT);
 	digitalWrite(enablePin, LOW);
 
-	int mclk_rate;
-
-	// FIXME: depends
-	switch (fs) {
-		case 48000: mclk_rate = fs * 384; break;
-		case 96000: mclk_rate = fs * 256; break;
-		default: mclk_rate = fs * 384; break;
-	}
+	int mclk_rate = fs * 384; // FIXME: factor probably depends on fs and CSK pins settings
 
 	static const i2s_config_t i2s_config = {
 				.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX),
@@ -92,7 +77,7 @@ int AudioDriver::setup(int fs, int bitClkPin, int lrClkPin, int dataOutPin, int 
 				.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
 				.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // high interrupt priority
 				.dma_buf_count = 2,
-				.dma_buf_len = 32,
+				.dma_buf_len = AudioDriver::BufferSize,
 				.use_apll = true,
 				.fixed_mclk = mclk_rate
 		};

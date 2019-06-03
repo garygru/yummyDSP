@@ -14,8 +14,8 @@
 class AudioNode {
 public:
 	virtual ~AudioNode() {};
-	virtual void begin(int fs) = 0;
-	virtual float processSample(float inSample) = 0;
+	virtual void begin(int fs, int channelCount) = 0;
+	virtual float processSample(float inSample, int channelCount) = 0;
 };
 
 #endif /* AudioNode_hpp */

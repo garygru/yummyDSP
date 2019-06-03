@@ -13,40 +13,26 @@ FilterNode::FilterNode() {
 	; // be sure to call begin(fs)
 }
 
-FilterNode::FilterNode(int fs) {
-	this->begin(fs);
+FilterNode::FilterNode(int fs, int channelCount) {
+	this->begin(fs, channelCount);
 }
 
 FilterNode::~FilterNode() {
 	;
 }
 
-void FilterNode::begin(int sampleRate) {
-	//	this->begin(fs, 50); // FIXME: no worky??
+void FilterNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
 	interpolator = new Interpolator(fs, 50);
-	
+
 	// reset states
-	filterStates[1] = 0;
-	filterStates[0] = 0;
+	memset(filterStates, 0, sizeof(filterStates));
 	for (int i = 0; i < 5; i++) {
 		filterCoeffs[i][kCurrent] = 0;
 		filterCoeffs[i][kTarget] = 0;
 	}
 }
 
-void FilterNode::begin(int sampleRate, int smoothTime) {
-	fs = sampleRate;
-	interpolator = new Interpolator(fs, smoothTime);
-	
-	// reset states
-	filterStates[1] = 0;
-	filterStates[0] = 0;
-	for (int i = 0; i < 5; i++) {
-		filterCoeffs[i][kCurrent] = 0;
-		filterCoeffs[i][kTarget] = 0;
-	}
-}
 
 //
 void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool resetStates) {
@@ -116,9 +102,8 @@ void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool rese
 	//	ESP_LOGI(TAG, "coeffs: %.5f %.5f %.5f %.5f %.5f %.5f", a0, a1, a2, b0, b1, b2);
 	
 	if (resetStates) {
-		filterStates[0] = filterStates[1] = 0;
+		memset(filterStates, 0, sizeof(filterStates));
 	}
-	
 	
 	// calc ramp deltas
 	for (int i = 0; i < 5; i++) {
@@ -133,7 +118,7 @@ void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool rese
 void FilterNode::updateFilter(float f0) {
 	float f = f0;
 	
-	// TODO: find smarter solutionm, unstable when going to low
+	// TODO: find smarter solution, unstable when going to low
 	switch(type) {
 		case HPF: f = constrain(f0, 1.f, fs*0.5f); break;
 		case LPF: f = constrain(f0, 50.f, fs*0.5f); break;
@@ -153,7 +138,7 @@ void FilterNode::updateFilter(float f0) {
 //
 // Apply filter
 //
-float FilterNode::processSample(float sample) {
+float FilterNode::processSample(float sample, int channel) {
 	float x = sample;
 	
 	// DF 1:
@@ -177,9 +162,9 @@ float FilterNode::processSample(float sample) {
 	//	  filterStates[0] = v;
 	
 	// Transposed DF 2:
-	float y = filterCoeffs[cB0][kCurrent] * x + filterStates[0];
-	filterStates[0] = filterCoeffs[cB1][kCurrent] * x - filterCoeffs[cA1][kCurrent] * y + filterStates[1];
-	filterStates[1] = filterCoeffs[cB2][kCurrent] * x - filterCoeffs[cA2][kCurrent] * y;
+	float y = filterCoeffs[cB0][kCurrent] * x + filterStates[0][channel];
+	filterStates[0][channel] = filterCoeffs[cB1][kCurrent] * x - filterCoeffs[cA1][kCurrent] * y + filterStates[1][channel];
+	filterStates[1][channel] = filterCoeffs[cB2][kCurrent] * x - filterCoeffs[cA2][kCurrent] * y;
 	
 	interpolator->process();
 	return y;

@@ -19,12 +19,12 @@ class WaveShaperNode : public AudioNode {
 public:
 
 	WaveShaperNode();
-	WaveShaperNode(int fs);
+	WaveShaperNode(int fs, int channelCount);
 	~WaveShaperNode();
 
-	void begin(int fs);
+	void begin(int fs, int channelCount);
 
-	float processSample(float sample);
+	float processSample(float sample, int channel);
 
 	float getDrive() {
 		return drive[kCurrent];

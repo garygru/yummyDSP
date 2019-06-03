@@ -15,19 +15,19 @@
 #define DELAYNODE_H
 
 
-#define MAX_DELAY_LEN (12000)
+#define MAX_DELAY_LEN (12000) // 320kB RAM is the show stopper here
 
 class DelayNode : public AudioNode {
 
 public:
 
 	DelayNode();
-	DelayNode(int fs);
+	DelayNode(int fs, int channelCount);
 	~DelayNode();
 
-	void begin(int fs);
+	void begin(int fs, int channelCount);
 
-	float processSample(float sample);
+	float processSample(float sample, int channel);
 
 	float delayMs() {
 		return delaySamples[kCurrent];
