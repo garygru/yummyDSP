@@ -1,9 +1,9 @@
-//
-//  Interpolator.cpp
-//  
-//
-//  Created by Gary Grutzek on 10.11.18.
-//
+/*
+ * 	Interpolator
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
+ */
 
 #include "Interpolator.h"
 

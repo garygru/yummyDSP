@@ -1,10 +1,9 @@
 /*
-    Filter Library
-
-    Smoothed LP-, HP-, BP-Filter
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ * 	FilterNode
+ *  Smoothed LP-, HP-, BP-Filter
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include <Nodes/AudioNode.h>

@@ -1,9 +1,9 @@
 /*
-	 DSP Library
-  
-	 Author: Gary Grutzek
-	 gary.grutzek@ib-gru.de
-*/
+ *  DSP Core / processing tree
+ *
+ *  Author: Gary Grutzek
+ *  gary@ib-gru.de
+ */
 
 #include <YummyDSP.h>
 

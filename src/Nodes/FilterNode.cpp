@@ -1,10 +1,9 @@
 /*
- Filter Library
- 
- Smoothed LP-, HP-, BP-Filter
- 
- Author: Gary Grutzek
- gary.grutzek@ib-gru.de
+ * 	FilterNode
+ *  Smoothed LP-, HP-, BP-Filter
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include <Nodes/FilterNode.h>
@@ -18,7 +17,9 @@ FilterNode::FilterNode(int fs, int channelCount) {
 }
 
 FilterNode::~FilterNode() {
-	;
+	if(interpolator) {
+		delete interpolator;
+	}
 }
 
 void FilterNode::begin(int sampleRate, int channelCount) {

@@ -1,10 +1,9 @@
 /*
- MixerNode
-
- currently more like a smoothed fader
- 
- Author: Gary Grutzek
- gary.grutzek@ib-gru.de
+ * 	MixerNode
+ *  (currently just a smoothed fader)
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include <Nodes/MixerNode.h>
@@ -18,7 +17,9 @@ MixerNode::MixerNode(int fs, int channelCount) {
 }
 
 MixerNode::~MixerNode() {
-	;
+	if(interpolator) {
+		delete interpolator;
+	}
 }
 
 void MixerNode::begin(int sampleRate, int channelCount) {
@@ -28,9 +29,6 @@ void MixerNode::begin(int sampleRate, int channelCount) {
 }
 
 
-//
-// return smoothed volume
-//
 float MixerNode::processSample(float sample, int channel) {
 	interpolator->process();
 	return sample * volume[kCurrent];

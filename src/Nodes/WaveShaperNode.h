@@ -1,8 +1,8 @@
 /*
-  	WaveShaperNode
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ * 	WaveShaperNode
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include "Arduino.h"

@@ -1,11 +1,53 @@
 /*
- DelayNode
- 
- Author: Gary Grutzek
- gary.grutzek@ib-gru.de
+ * 	DelayNode
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include <Nodes/DelayNode.h>
+
+
+DelayLine::DelayLine() {
+	channelCount = 1;
+	length = MAX_DELAY_LEN;
+}
+
+
+void DelayLine::begin(int channelCount) {
+	memset(buffer, 0, sizeof(buffer));
+	this->channelCount = constrain(channelCount, 1, 2);
+	length = MAX_DELAY_LEN / channelCount;
+	writeIndex = 0;
+	sampleDelay = length/2;
+}
+
+
+void DelayLine::push(float sample, int channel) {
+	buffer[writeIndex + length * channel] = sample;
+	if (channel == channelCount-1) {
+		writeIndex++;
+	}
+	if (writeIndex >= length) {
+		writeIndex = 0;
+	}
+}
+
+
+float DelayLine::pop(int channel) {
+	readIndex = writeIndex - sampleDelay;
+	if (readIndex < 0) {
+		readIndex += length;
+	}
+	return buffer[readIndex + length * channel];
+}
+
+
+void DelayLine::setSampleDelay(int delay) {
+	sampleDelay = constrain(delay, 0, MAX_DELAY_LEN);
+}
+
+
 
 DelayNode::DelayNode() {
 	; // be sure to call begin(fs)
@@ -16,20 +58,24 @@ DelayNode::DelayNode(int sampleRate, int channelCount) {
 }
 
 DelayNode::~DelayNode() {
-	;
+	if(interpolator) {
+		delete interpolator;
+	}
 }
 
 void DelayNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
-	maxDelayTimeMs = (int)((MAX_DELAY_LEN * 1000) / fs);
 	interpolator = new Interpolator(fs, 50);
-	setDelayMs(144.f, false);
-	setMix(0.3f, false);
-	readCnt = MAX_DELAY_LEN - (int) delaySamples[kCurrent];
-	writeCnt = 0;
+
+	maxDelayTimeMs = (int)((MAX_DELAY_LEN * 1000) / (fs * channelCount));
+
+	delayLine.begin(channelCount);
+
+	setDelayMs(80.f, false);
+	setMix(0.5f, false);
 
 	lp.begin(fs, channelCount);
-	lp.setupFilter(FilterNode::LPF, 1000, 0.7);
+	lp.setupFilter(FilterNode::LPF, 1200, 0.5f);
 
 }
 
@@ -37,26 +83,13 @@ void DelayNode::begin(int sampleRate, int channelCount) {
 float DelayNode::processSample(float sample, int channel) {
 	interpolator->process();
 
-	float fb = 1.5f * buffer[readCnt];
-	fb = lp.processSample(fb, channel);
+	float y = delayLine.pop(channel);
 
-	buffer[writeCnt] = (sample + fb)/2;
-	writeCnt++;
-	if (writeCnt >= MAX_DELAY_LEN) {
-		writeCnt = 0;
-	}
+	// feedback and low pass, still arbitrary
+	float fb = 1.4f *  y;
+	fb = lp.processSample((sample+fb)*0.5f, channel);
 
-	//readCnt = writeCnt - (int) delaySamples[kCurrent];
-	readCnt++;
-	if(readCnt >= MAX_DELAY_LEN) {
-		readCnt -= MAX_DELAY_LEN;
-	}
-
-//	Serial.println(mix[kCurrent]);
-
-	float y = buffer[readCnt];
-
-	// wet signal low pass
+	delayLine.push(fb, channel);
 
 	return mix[kCurrent] * y + (1.f-mix[kCurrent]) * sample;
 }
@@ -73,15 +106,13 @@ void DelayNode::setMix(float val, bool fade) {
 
 
 void DelayNode::setDelayMs(float ms, bool fade) {
-
-	float delayMs = constrain(ms, 0.1f, maxDelayTimeMs);
-	delaySamples[kTarget] = floor(delayMs * fs * 0.001f);
+	delayMillis[kTarget] = constrain(ms, 0.1f, maxDelayTimeMs);
 
 	if (fade == false) {
-		delaySamples[kCurrent] = delaySamples[kTarget];
+		delayMillis[kCurrent] = delayMillis[kTarget];
 	}
-	Serial.println(delaySamples[kCurrent]);
+	interpolator->add(&delayMillis[kCurrent], delayMillis[kTarget]);
 
-	interpolator->add(&delaySamples[kCurrent], delaySamples[kTarget]);
+	delayLine.setSampleDelay(floor(delayMillis[kCurrent] * fs * 0.001));
 }
 

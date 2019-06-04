@@ -1,13 +1,12 @@
 /*
- WaveSynth – Monophonic wavetable synthesizer
-
- 16 Bit Fixed Point Wavetable synthesis
- Linear interpolated table lookup
- Linear smoothed volume
- Linear smoothed frequency
-
- Author: Gary Grutzek
- gary.grutzek@ib-gru.de
+ * 	WaveSynth – monophonic wavetable synthesizer
+ *
+ * 	floating point wavetable synthesis
+ *	linear interpolated table lookup
+ *	exponential ADSR envelope
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include "WaveSynth.h"

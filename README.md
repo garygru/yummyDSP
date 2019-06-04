@@ -42,12 +42,14 @@ Currently you also need an ADC or audio codec connected via I2S.
 
 
 ## ESP32
-The ESP32 has two cores at 240 MHz and features a Bluetooth and Wifi module (hello OSC). 
+The ESP32 has two cores at 240 MHz and features a Bluetooth and Wifi module (hello OSC). The WROOM32 module has just 520 kB of RAM, the WROVER32 module at least additional 4MB (you'll want that for many lookup tables, delay line, etc.).  
+The ESP32 is running a realtime OS, namely freeRTOS managing tasks, threading and all that. 
 Audio processing is running on one core, leaving the other for control and housekeeping stuff. 
 
 ## Fun Facts
 - Processing is sample wise 
 - I2S buffers are handled by DMA
+- I2S master clock is provided on GPIO0. This pin needs to be high on boot up!
 - Latency is low, depends on the I2S buffer size (currently a few ms)
 - The audio driver is only tested with the AKM AK4556 audio codec. A proper hardware abstraction layer is still missing. 
 

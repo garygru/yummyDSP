@@ -1,8 +1,8 @@
 /*
-    DSP Library
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ *  DSP Core / processing tree
+ *
+ *  Author: Gary Grutzek
+ *  gary@ib-gru.de
 */
 
 
@@ -21,7 +21,6 @@
 #include <list>
 
 
-
 class YummyDSP {
 
   public:
@@ -31,10 +30,6 @@ class YummyDSP {
 
     void begin(int fs);
     int getSampleRate() { return fs; }
-	
-	// TODO:
-//	void addSource();
-//	void addSink(); ??
 	
 	void addNode(AudioNode *node);
 	

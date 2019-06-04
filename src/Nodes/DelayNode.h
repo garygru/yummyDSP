@@ -1,8 +1,8 @@
 /*
-  	DelayNode
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ * 	DelayNode
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include "Arduino.h"
@@ -15,7 +15,31 @@
 #define DELAYNODE_H
 
 
-#define MAX_DELAY_LEN (12000) // 320kB RAM is the show stopper here
+#define MAX_DELAY_LEN (12000) // 520kB RAM is a show stopper
+
+class DelayLine {
+
+public:
+
+	DelayLine();
+
+	void begin(int channelCount);
+	void push(float sample, int channel);
+	float pop(int channel);
+
+	void setSampleDelay(int delay);
+
+protected:
+
+	float buffer[MAX_DELAY_LEN + 1];
+	int length;
+	int channelCount;
+	int sampleDelay;
+	int readIndex;
+	int writeIndex;
+
+};
+
 
 class DelayNode : public AudioNode {
 
@@ -29,29 +53,23 @@ public:
 
 	float processSample(float sample, int channel);
 
-	float delayMs() {
-		return delaySamples[kCurrent];
-	}
-
-	float wet() {
-		return mix[kCurrent];
-	}
-
 	void setMix(float ms, bool fade = true);
+	float wet() { return mix[kCurrent]; }
 
 	void setDelayMs(float ms, bool fade = true);
+	float delayMs() { return delayMillis[kCurrent]; }
+
+	int maxDelayMs() { return maxDelayTimeMs; }
 
 protected:
 	int fs; // sample rate
 	Interpolator *interpolator;
-	float delaySamples[kSmoothCount];
+	float delayMillis[kSmoothCount];
 	float mix[kSmoothCount];
 
 	FilterNode lp;
 
-	float buffer[MAX_DELAY_LEN + 1];
-	int readCnt;
-	int writeCnt;
+	DelayLine delayLine;
 	int maxDelayTimeMs;
 
 };

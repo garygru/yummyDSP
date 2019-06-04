@@ -1,10 +1,9 @@
 /*
-    DSP Library
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ *  DSP Helpers
+ *
+ *  Author: Gary Grutzek
+ *  gary@ib-gru.de
 */
-
 
 #ifndef DSP_HELPERS_H
 #define DSP_HELPERS_H

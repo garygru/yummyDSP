@@ -1,8 +1,8 @@
 /*
- WaveShaperNode
- 
- Author: Gary Grutzek
- gary.grutzek@ib-gru.de
+ * 	WaveShaperNode
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include <Nodes/WaveShaperNode.h>
@@ -17,7 +17,9 @@ WaveShaperNode::WaveShaperNode(int sampleRate, int channelCount) {
 }
 
 WaveShaperNode::~WaveShaperNode() {
-	;
+	if(interpolator) {
+		delete interpolator;
+	}
 }
 
 void WaveShaperNode::begin(int sampleRate, int channelCount) {

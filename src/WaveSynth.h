@@ -1,12 +1,12 @@
 /*
-    WaveSynth – Monophonic wavetable synthesizer
-
-    16 Bit Fixed Point Wavetable synthesis
-    Linear interpolated table lookup
-    Exponential ADSR Envelope
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ * 	WaveSynth – monophonic wavetable synthesizer
+ *
+ * 	floating point wavetable synthesis
+ *	linear interpolated table lookup
+ *	exponential ADSR envelope
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include "Arduino.h"
@@ -101,7 +101,6 @@ public:
 		} break;
 		case SUSTAIN: {
 			if (!gate) {
-				Serial.println("sg");
 				state = RELEASE;
 			}
 		} break;
@@ -113,7 +112,6 @@ public:
 			}
 		} break;
 		}
-
 		return gain;
 	}
 

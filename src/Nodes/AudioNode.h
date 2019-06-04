@@ -1,12 +1,12 @@
-//
-//  AudioNode.hpp
-//  
-//
-//  Created by Gary Grutzek on 10.11.18.
-//
+/*
+ * 	AudioNode
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
+ */
 
-#ifndef AudioNode_hpp
-#define AudioNode_hpp
+#ifndef AUDIONODE
+#define AUDIONODE
 
 #include <stdio.h>
 #include "dspHelpers.h"
@@ -18,4 +18,4 @@ public:
 	virtual float processSample(float inSample, int channelCount) = 0;
 };
 
-#endif /* AudioNode_hpp */
+#endif

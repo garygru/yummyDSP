@@ -1,9 +1,9 @@
 /*
-  	MixerNode
- 	(currently more like a smoothed fader)
-
-    Author: Gary Grutzek
-    gary.grutzek@ib-gru.de
+ * 	MixerNode
+ *  (currently just a smoothed fader)
+ *
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  */
 
 #include "Arduino.h"

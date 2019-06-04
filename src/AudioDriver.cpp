@@ -1,8 +1,8 @@
 /*
- * AudioDriver.cpp
+ *  AudioDriver.cpp
  *
- *  Created on: 30 Nov 2018
- *      Author: gary
+ *  Author: Gary Grutzek
+ * 	gary@ib-gru.de
  *
  * AKM AK4556 Audio Serial Interface Format / Timing
  *
@@ -57,9 +57,10 @@ int32_t float2Int(float sample) {
 }
 
 
-int AudioDriver::setup(int fs, int bitClkPin, int lrClkPin, int dataOutPin, int dataInPin, int enablePin, i2s_port_t i2s_port) {
+int AudioDriver::setup(int fs, int channelCount, int bitClkPin, int lrClkPin, int dataOutPin, int dataInPin, int enablePin, i2s_port_t i2s_port) {
 
 	this->fs = fs;
+	this->channelCount = channelCount;
 	this->i2sPort = constrain(i2s_port, I2S_NUM_0, I2S_NUM_MAX);
 
 	// power down (not) pin
@@ -67,7 +68,7 @@ int AudioDriver::setup(int fs, int bitClkPin, int lrClkPin, int dataOutPin, int 
 	pinMode(enablePin, OUTPUT);
 	digitalWrite(enablePin, LOW);
 
-	int mclk_rate = fs * 384; // FIXME: factor probably depends on fs and CSK pins settings
+	int mclk_rate = fs * 384; // FIXME: factor depends on fs and CKS pins settings
 
 	static const i2s_config_t i2s_config = {
 				.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX),
@@ -105,13 +106,47 @@ int AudioDriver::setup(int fs, int bitClkPin, int lrClkPin, int dataOutPin, int 
 		// wait for stable clock
 		delay(500);
 
+		// I2S buffers
+		i2sBufferSize =  channelCount * AudioDriver::BufferSize;
+
+		i2sReadBuffer = (int32_t*) calloc(i2sBufferSize, sizeof(int32_t));
+		i2sWriteBuffer = (int32_t*) calloc(i2sBufferSize, sizeof(int32_t));
+
 		return err;
 }
+
 
 bool AudioDriver::enable(bool powerOn) {
 	digitalWrite(enablePin, powerOn);
 	return true;
 }
+
+
+int AudioDriver::readBlock() {
+	uint bytesRead = 0;
+
+	int err = i2s_read(i2sPort, (void*) i2sReadBuffer, i2sBufferSize * sizeof(int32_t), &bytesRead, 500);
+
+	if (err || bytesRead < (i2sBufferSize * sizeof(int32_t))) {
+		Serial.print("I2S read error: ");
+		Serial.println(bytesRead);
+	}
+	return err;
+}
+
+
+int AudioDriver::writeBlock() {
+	uint bytesWritten = 0;
+
+	int err = i2s_write(i2sPort, (const char *) i2sWriteBuffer, channelCount * AudioDriver::BufferSize * sizeof(int32_t), &bytesWritten, 500);
+
+	if (bytesWritten < 1) {
+		Serial.print("I2S write error: ");
+		Serial.println(bytesWritten);
+	}
+	return err;
+}
+
 
 
 
