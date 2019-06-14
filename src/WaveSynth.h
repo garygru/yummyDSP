@@ -43,7 +43,7 @@ public:
 		overshoot = 0.05;
 		state = IDLE;
 		gain = 0;
-		setADSR(50, 10, 0.8, 400);
+		setADSR(20, 10, 0.7, 400);
 	}
 
 	void setADSR(float attack, float decay, float sustainLevel, float release) {
@@ -54,11 +54,12 @@ public:
 	}
 
 	void setAttack(float attackms) {
-		adsr[ATTACK] = 1.f-expf(-1/(fs*attackms/3000.f));
+		adsr[ATTACK] = 1.f-expf(-1.f/(fs*attackms/3000.f));
+		Serial.println(adsr[ATTACK]);
 	}
 
 	void setDecay(float decayms) {
-		adsr[DECAY] = 1.f-expf(-1/(fs*decayms/2000.f));
+		adsr[DECAY] = 1.f-expf(-1.f/(fs*decayms/2000.f));
 	}
 
 	void setSustain(float sustainLevel) {
@@ -66,12 +67,13 @@ public:
 	}
 
 	void setRelease(float releasems) {
-		adsr[RELEASE] = 1.f-expf(-1/(fs*releasems/3000.f));
+		adsr[RELEASE] = 1.f-expf(-1.f/(fs*releasems/3000.f));
 	}
 
 	void noteOn() {
 		state = ATTACK;
 		gate = ON;
+//		gain = 0;
 	}
 
 	void noteOff() {
@@ -95,11 +97,11 @@ public:
 		case DECAY: {
 			gain = gain * (1.f-adsr[DECAY]) + (adsr[SUSTAIN]-overshoot) * adsr[DECAY];
 			if (gain <= adsr[SUSTAIN]) {
-				gain = adsr[SUSTAIN];
 				state = SUSTAIN;
 			}
 		} break;
 		case SUSTAIN: {
+			gain = adsr[SUSTAIN];
 			if (!gate) {
 				state = RELEASE;
 			}
@@ -161,11 +163,11 @@ public:
 	void note(int note);
 
 	void noteOn() { // retrigger
-		envelope->noteOn();
+		env->noteOn();
 	}
 
 	void noteOff() {
-		envelope->noteOff();
+		env->noteOff();
 	}
 
 	void setGlide(int ms) {
@@ -175,9 +177,14 @@ public:
 		}
 	}
 
+	void setAttack(float ms) { env->setAttack(ms); }
+	void setDecay(float ms) { env->setDecay(ms); }
+	void setSustain(float level) { env->setSustain(level); }
+	void setRelease(float ms) { env->setRelease(ms); }
+
 protected:
 	Interpolator *interpolator;
-	Envelope *envelope;
+	Envelope *env;
 
 	void generateWavetable();
 	float getWaveSample();

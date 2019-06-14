@@ -21,7 +21,7 @@ WaveSynth::~WaveSynth() {
 		delete waveTable;
 	}
 	delete(interpolator);
-	delete(envelope);
+	delete(env);
 }
 
 
@@ -31,7 +31,7 @@ void WaveSynth::begin(int sampleRate, int waveTableSize) {
 
 	glide = 1;
 	interpolator = new Interpolator(fs, glide); // glide
-	envelope = new Envelope(fs);
+	env = new Envelope(fs);
 
 	offset = 0; // no DC offset
 	setFrequency(440.f);
@@ -62,7 +62,7 @@ float WaveSynth::getSample() {
 		sample = getNoiseSample();
 		break;
 	}
-	return sample * envelope->process();
+	return sample * env->process();
 }
 
 /*
@@ -134,7 +134,7 @@ void WaveSynth::setFrequency(float frequency) {
 
 void WaveSynth::note(float frequency) { // TODO: velocity
 	setFrequency(frequency);
-	envelope->noteOn();
+	env->noteOn();
 }
 
 void WaveSynth::note(int midinote) { // TODO: velocity
@@ -142,7 +142,7 @@ void WaveSynth::note(int midinote) { // TODO: velocity
 	float f = powf(2.f, (num-69)/12.f)*440;
 	//Serial.println(f);
 	setFrequency(f);
-	envelope->noteOn();
+	env->noteOn();
 }
 
 
