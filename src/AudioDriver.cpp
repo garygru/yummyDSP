@@ -83,7 +83,9 @@ int AudioDriver::setupAK4556(int mode, int fs, int channelCount, int bitClkPin, 
 		case 3: 
 			err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_I2S_MSB, CODEC_I2S_ALIGN, mclk_fs); 
 			break;
-		default: break;
+		default:
+            err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_PCM, CODEC_LJ_RJ_ALIGN, mclk_fs);
+            break;
 	}
 	
 	err += setPins(bitClkPin, lrClkPin, dataOutPin, dataInPin, enablePin);
