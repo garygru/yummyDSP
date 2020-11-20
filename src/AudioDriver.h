@@ -14,10 +14,10 @@
 #include "driver/i2s.h"
 
 
-// TODO: abstraction layer for ADC / DAC / PDM / CODEC Shields
-
-int32_t float2Int(float sample);
-float int2Float(int32_t sample);
+enum i2s_alignment {
+	CODEC_I2S_ALIGN = 0,
+	CODEC_LJ_RJ_ALIGN
+};
 
 
 class AudioDriver {
@@ -28,24 +28,36 @@ public:
 	static const float ScaleFloat2Int;
 	static const float ScaleInt2Float;
 
-	int setup(int fs=48000, int channelCount=1, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
+	int setPins(int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33);
 
-	bool enable(bool powerOn);
+	int setFormat(int fs, int channelCount, i2s_bits_per_sample_t bitsPerSample, i2s_comm_format_t commFormat, int alignment=CODEC_I2S_ALIGN, int mclkFactor = 384);
+	
+	bool start();
 
-	// TODO:  CKS configuration pin support
-	// hpf on/off
-	// mode ...
+	// convenience functions
+	int setup(int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
+	int setupAK4552(int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
+	int setupAK4556(int mode, int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
+
+	bool mute(bool powerDown);
 
 	int readBlock();
 	int writeBlock();
 
-//	float readSample(int n, int channel);
-//	void writeSample(float sample, int n, int channel);
+	inline int32_t float2Int(float sample) {
+		sample *= AudioDriver::ScaleFloat2Int;
+		int32_t y = (int32_t)(sample >= 0.5)? sample+1 : sample;
+		y = constrain(y, -AudioDriver::ScaleFloat2Int, AudioDriver::ScaleFloat2Int-1);
+		return y << this->lshift;
+	}
+
+	inline float int2Float(int32_t sample) {
+		return (float)(sample * AudioDriver::ScaleInt2Float);
+	}
 
 	inline float readSample(int n, int channel) {
 		return int2Float(i2sReadBuffer[channelCount * n + channel]);
 	}
-
 
 	inline void writeSample(float sample, int n, int channel) {
 		 i2sWriteBuffer[channelCount * n + channel] = float2Int(sample);
@@ -56,6 +68,8 @@ protected:
 	int fs;
 	int channelCount;
 	int enablePin;
+
+	int lshift;
 
 	i2s_port_t i2sPort;
 	int i2sBufferSize;
