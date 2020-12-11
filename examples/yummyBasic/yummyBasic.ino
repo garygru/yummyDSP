@@ -43,7 +43,7 @@ void setup() {
 
   // setup audio codec
   i2sCodec.setup(fs, channelCount, I2S_BCK_PIN, I2S_LRCLK_PIN, I2S_DOUT_PIN, I2S_DIN_PIN, CODEC_ENABLE_PIN);
-  i2sCodec.enable(true);
+  i2sCodec.mute(false);
 
   // setup audio lib
   dsp.begin(fs);
@@ -125,4 +125,3 @@ void loop()
   dly.setDelayMs(pot * dly.maxDelayMs());
 
 }
-

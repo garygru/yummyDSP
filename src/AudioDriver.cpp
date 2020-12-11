@@ -96,13 +96,13 @@ bool AudioDriver::start() {
 	// wait for stable clock
 	delay(400);
 
-	digitalWrite(enablePin, true);
+    mute(false);
 	return true;
 }
 
 
 bool AudioDriver::mute(bool powerDown) {
-	digitalWrite(enablePin, powerDown);
+	digitalWrite(enablePin, !powerDown);
 	return true;
 }
 
