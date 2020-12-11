@@ -28,16 +28,18 @@ public:
 	static const float ScaleFloat2Int;
 	static const float ScaleInt2Float;
 
+public:
+
 	int setPins(int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33);
+
+	void setI2sPort(i2s_port_t i2s_port);
 
 	int setFormat(int fs, int channelCount, i2s_bits_per_sample_t bitsPerSample, i2s_comm_format_t commFormat, int alignment=CODEC_I2S_ALIGN, int mclkFactor = 384);
 	
 	bool start();
 
-	// convenience functions
+	// convenience constructor
 	int setup(int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
-	int setupAK4552(int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
-	int setupAK4556(int mode, int fs=48000, int channelCount=2, int bitClkPin=26, int lrClkPin=27, int dataOutPin=14, int dataInPin=13, int enablePin=33, i2s_port_t i2sPort=I2S_NUM_0);
 
 	bool mute(bool powerDown);
 
@@ -47,8 +49,8 @@ public:
 	inline int32_t float2Int(float sample) {
 		sample *= AudioDriver::ScaleFloat2Int;
 		int32_t y = (int32_t)(sample >= 0.5)? sample+1 : sample;
-		y = constrain(y, -AudioDriver::ScaleFloat2Int, AudioDriver::ScaleFloat2Int-1);
-		return y << this->lshift;
+		// y = constrain(y, -AudioDriver::ScaleFloat2Int, AudioDriver::ScaleFloat2Int-1);
+		return (y << 8);
 	}
 
 	inline float int2Float(int32_t sample) {
