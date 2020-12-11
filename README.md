@@ -51,7 +51,7 @@ Audio processing is running on one core, leaving the other for control and house
 - I2S buffers are handled by DMA
 - I2S master clock is provided on GPIO0. This pin needs to be high on boot up!
 - Latency is low, depends on the I2S buffer size (currently a few ms)
-- Tested with AKM AK4552 and AK4556 audio codec and AC101 / AI-Thinker Audiokit
+- Tested with AKM AK4552 and AK4556 audio codec and AC101 / AI-Thinker Audio Development Kit
 
 
 ## License
