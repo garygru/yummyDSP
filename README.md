@@ -31,7 +31,7 @@ Currently there a just a few nodes implemented (more to come)
 ## Getting Started
 
 First you'll need some sort of an ESP32 e.g. [ESP32 DevKitC](https://www.espressif.com/en/products/hardware/esp32-devkitc/overview) or a derivate.  
-Currently you also need an ADC or audio codec connected via I2S.  
+You also need an ADC or audio codec connected via I2S. The AI-Thinker ESP32 Audio Kit is cheap and has everything on board to start. 
 *I didn't manage yet to make the built-in ADC work with I2S DMA without breaking the DAC. If someone has an advice, please drop me a line*. 
  
 
