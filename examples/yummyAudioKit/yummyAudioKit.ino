@@ -30,7 +30,7 @@
 #define I2S_BCK_PIN                 27
 #define I2S_LRCLK_PIN               26
 #define I2S_DOUT_PIN                25
-#define I2S_DIN_PIN             13 // ?
+#define I2S_DIN_PIN             	35
 
 #define GPIO_PA_EN                  GPIO_NUM_21
 #define GPIO_SEL_PA_EN              GPIO_SEL_21
