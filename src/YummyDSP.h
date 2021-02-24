@@ -16,6 +16,7 @@
 #include "Nodes/MixerNode.h"
 #include "Nodes/WaveShaperNode.h"
 #include "Nodes/DelayNode.h"
+#include "Nodes/StatisticsNode.h"
 
 #include "WaveSynth.h"
 #include <list>
