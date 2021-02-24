@@ -93,7 +93,8 @@ public:
 		MODE_ADC,
 		MODE_DAC,
 		MODE_ADC_DAC,
-		MODE_LINE
+		MODE_LINE,
+		MODE_MIC
 	} Mode_t;
 
 	// Constructor.

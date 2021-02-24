@@ -30,29 +30,29 @@
 #define I2S_BCK_PIN                 27
 #define I2S_LRCLK_PIN               26
 #define I2S_DOUT_PIN                25
-#define I2S_DIN_PIN             	35
+#define I2S_DIN_PIN                 35
 
 #define GPIO_PA_EN                  GPIO_NUM_21
 #define GPIO_SEL_PA_EN              GPIO_SEL_21
 
-#define PIN_PLAY                    (23)      // KEY 4
 #define PIN_VOL_UP                  (18)      // KEY 5
 #define PIN_VOL_DOWN                (5)       // KEY 6
+#define PIN_INPUT_SELECT            (23)      // KEY 4
 
 static AC101 i2sCodec;
 YummyDSP dsp;
-WaveSynth synth;
 FilterNode lp;
 FilterNode hp;
+MixerNode gain;
+WaveShaperNode sat;
 
 // I2S
 const int fs = 96000;
 const int channelCount = 2;
 
-static uint8_t volume = 10;
+static uint8_t volume = 12;
 const uint8_t volume_step = 2;
-int note = 0;
-int arpCnt = 0;
+int input_select = 1;
 
 int debounce = 0;
 
@@ -70,41 +70,44 @@ void setup()
 
   i2sCodec.SetVolumeSpeaker(volume);
   i2sCodec.SetVolumeHeadphone(volume);
-  //  ac.DumpRegisters();
+  i2sCodec.SetMode(i2sCodec.MODE_LINE);
+  //i2sCodec.DumpRegisters();
 
   // Enable amplifier
   pinMode(GPIO_PA_EN, OUTPUT);
   digitalWrite(GPIO_PA_EN, HIGH);
 
   // Configure keys on ESP32 Audio Kit board
-  pinMode(PIN_PLAY, INPUT_PULLUP);
+  pinMode(PIN_INPUT_SELECT, INPUT_PULLUP);
   pinMode(PIN_VOL_UP, INPUT_PULLUP);
   pinMode(PIN_VOL_DOWN, INPUT_PULLUP);
 
   Serial.printf("Use KEY5/KEY6 for volume Up/Down\n");
+  Serial.printf("Use KEY4 for Input Select\n");
+  Serial.printf("Line In selected by default\n");
 
   // setup audio lib
   dsp.begin(fs);
-
-  synth.begin(fs);
-  synth.noteOff();
-  synth.setWaveform(SAW);
-  synth.setGlide(0);
-  synth.setAttack(50);
-  synth.setSustain(0.6);
 
   // setup some filter nodes
   lp.begin(fs, channelCount);
   lp.setupFilter(FilterNode::LPF, 5000, 1.7);
 
   hp.begin(fs, channelCount);
-  hp.setupFilter(FilterNode::HPF, 20, 1.0);
+  hp.setupFilter(FilterNode::HPF, 100, 1.0);
+  
+  gain.begin(fs, channelCount);
+  gain.setVolumedB(0,false);
+  
+  sat.begin(fs, channelCount);
+  sat.setDrive(0.5f);
 
   // add nodes to audio processing tree
   // Synth => hp => lp => I2S out
-  // dsp.addNode(&hp);
+  dsp.addNode(&hp);
   dsp.addNode(&lp);
-
+  dsp.addNode(&gain);
+  dsp.addNode(&sat);
 
   // run audio in dedicated task on cpu core 1
   xTaskCreatePinnedToCore(audioTask, "audioTask", 10000, NULL, 10, NULL, 1);
@@ -134,15 +137,14 @@ void audioTask(void *) {
   float sample = 0;
 
   while (true) {
+	  
+	i2sCodec.readBlock();
 
     for (int i = 0; i < AudioDriver::BufferSize; i++) {
 
-      float sampleMono = synth.getSample();
-
       for (int ch = 0; ch < channelCount; ch++) {
-
-        // upmix to stereo
-        sample = sampleMono;
+		  
+		sample = i2sCodec.readSample(i, ch);
 
         sample = dsp.process(sample, ch);
 
@@ -161,43 +163,6 @@ void loop()
   bool updateVolume = false;
 
   delay(2);
-
-  //  uncomment to change low pass filter frequency with a pot
-  //    lp.updateFilter(pot * 10000.f);
-
-  // playin some notes
-  int len = 100;
-  arpCnt++;
-  switch (note) {
-    case 0: {
-        if (arpCnt > len) {
-          arpCnt = 0;
-          synth.note(40);
-          note++;
-        }
-      }
-    case 1: {
-        if (arpCnt > len) {
-          arpCnt = 0;
-          synth.note(47);
-          note++;
-        }
-      }
-    case 2: {
-        if (arpCnt > len) {
-          arpCnt = 0;
-          synth.note(43);
-          note++;
-        }
-      }
-    case 3: {
-        if (arpCnt > len) {
-          arpCnt = 0;
-          synth.note(47);
-          note = 0;
-        }
-      }
-  }
 
   if (pressed(PIN_VOL_UP))
   {
@@ -224,4 +189,18 @@ void loop()
     i2sCodec.SetVolumeSpeaker(volume);
     i2sCodec.SetVolumeHeadphone(volume);
   }
+  if (pressed(PIN_INPUT_SELECT))
+	if (input_select == 0)
+	{
+		Serial.printf("Line In Selected\n");
+		i2sCodec.SetMode(i2sCodec.MODE_LINE);
+		input_select = 1;
+	}
+	else if (input_select == 1)
+	{
+		Serial.printf("Mic Selected\n");
+		i2sCodec.SetMode(i2sCodec.MODE_MIC);
+		input_select = 0;
+	}
+	
 }
