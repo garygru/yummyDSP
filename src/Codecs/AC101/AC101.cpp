@@ -245,7 +245,7 @@ bool AC101::begin(int fs)
 	// Path Configuration
 	ok &= WriteReg(DAC_MXR_SRC, 0xcc00);
 	ok &= WriteReg(DAC_DIG_CTRL, 0x8000);
-	ok &= WriteReg(OMIXER_SR, 0x0102);
+	ok &= WriteReg(OMIXER_SR, 0x0081);
 	ok &= WriteReg(OMIXER_DACA_CTRL, 0xf080);
 
 	ok &= SetMode(MODE_ADC_DAC);
