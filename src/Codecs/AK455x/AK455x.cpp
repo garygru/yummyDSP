@@ -18,7 +18,7 @@ int AK4552::setup(int fs, int channelCount, int bitClkPin, int lrClkPin, int dat
 	this->i2sPort = constrain(i2s_port, I2S_NUM_0, I2S_NUM_MAX);
 
 	int mclk_fs = 384;
-	int err = setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_PCM, CODEC_LJ_RJ_ALIGN, mclk_fs);
+	int err = setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_STAND_PCM_SHORT, CODEC_LJ_RJ_ALIGN, mclk_fs);
 	err += setPins(bitClkPin, lrClkPin, dataOutPin, dataInPin, enablePin);
 	err += start();
 	return err;
@@ -68,16 +68,16 @@ int AK4556::setup(int mode, int fs, int channelCount, int bitClkPin, int lrClkPi
 		case 1:
 		case 2:
 		case 3:
-			err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_PCM, CODEC_LJ_RJ_ALIGN, mclk_fs);
+			err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_STAND_PCM_SHORT, CODEC_LJ_RJ_ALIGN, mclk_fs);
 		 	break;
 		case 4:
 		case 5:
 		case 6:
 		case 7: 
-			err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_I2S_MSB, CODEC_I2S_ALIGN, mclk_fs); 
+			err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_STAND_I2S, CODEC_I2S_ALIGN, mclk_fs); 
 			break;
 		default:
-            err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_PCM, CODEC_LJ_RJ_ALIGN, mclk_fs);
+            err += setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_STAND_PCM_SHORT, CODEC_LJ_RJ_ALIGN, mclk_fs);
             break;
 	}
 	

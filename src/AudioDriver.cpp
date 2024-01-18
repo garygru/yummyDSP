@@ -7,15 +7,12 @@
  */
 #include "AudioDriver.h"
 
-const float AudioDriver::ScaleFloat2Int = 8388608.f; // 2^23
-const float AudioDriver::ScaleInt2Float = 0.0000000004656612873077392578125f; // 1 / 2^31
-
 // this is a generic I2S setup. If this doesn't match, call setFormat, setPins, etc. seperately
 int AudioDriver::setup(int fs, int channelCount, int bitClkPin, int lrClkPin, int dataOutPin, int dataInPin, int enablePin, i2s_port_t i2sPort) {
 	int mclk_fs = 384;
 
 	setI2sPort(i2sPort);
-	int err = setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_32BIT, I2S_COMM_FORMAT_I2S, CODEC_I2S_ALIGN, mclk_fs);
+	int err = setFormat(fs, channelCount, (i2s_bits_per_sample_t)BitsPerSample, I2S_COMM_FORMAT_STAND_I2S, CODEC_I2S_ALIGN, mclk_fs);
 	err += setPins(bitClkPin, lrClkPin, dataOutPin, dataInPin, enablePin);
 	err += start();
 	return err;
@@ -25,14 +22,13 @@ void AudioDriver::setI2sPort(i2s_port_t i2s_port) {
 	this->i2sPort = constrain(i2s_port, I2S_NUM_0, I2S_NUM_MAX);
 }
 
-
 int AudioDriver::setFormat(int fs, int channelCount, i2s_bits_per_sample_t bitsPerSample, i2s_comm_format_t format, int alignment, int mclkFactor) {
 	this->fs = fs;
 	this->channelCount = channelCount;
 	
 	static const i2s_config_t i2s_config = {
 			.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX),
-			.sample_rate = fs,
+			.sample_rate = (uint32_t)fs,
 			.bits_per_sample = bitsPerSample,
 			.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
 			.communication_format = format,
@@ -41,7 +37,7 @@ int AudioDriver::setFormat(int fs, int channelCount, i2s_bits_per_sample_t bitsP
 			.dma_buf_len = AudioDriver::BufferSize,
 			.use_apll = true,
 			.tx_desc_auto_clear = true,
-			.fixed_mclk = fs * mclkFactor,
+		//	.fixed_mclk = fs * mclkFactor,
 	};
 
 	switch (alignment) {
@@ -77,7 +73,6 @@ int AudioDriver::setPins(int bitClkPin, int lrClkPin, int dataOutPin, int dataIn
 
 
 bool AudioDriver::start() {
-
 	// enable I2S master clock on GPIO0 for master mode
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
 	//WRITE_PERI_REG(PIN_CTRL, READ_PERI_REG(PIN_CTRL) & 0xFFFFFFF0);

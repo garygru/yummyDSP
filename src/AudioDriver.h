@@ -8,25 +8,27 @@
 #ifndef AUDIODRIVER_H_
 #define AUDIODRIVER_H_
 
+#include "dspHelpers.h"
 #include "Arduino.h"
 // include espressif hw files
 #include "driver/gpio.h"
 #include "driver/i2s.h"
 
+#define BITS_PER_SAMPLE 32 // can be 8, 16, 24 or 32
+#define BUF_SIZE 32 // buffer size in SAMPLES
 
 enum i2s_alignment {
 	CODEC_I2S_ALIGN = 0,
 	CODEC_LJ_RJ_ALIGN
 };
 
-
 class AudioDriver {
 
 public:
-
-	static const int BufferSize=32; // increase to 64 samples to avoid drop outs (at 192 kHz)
-	static const float ScaleFloat2Int;
-	static const float ScaleInt2Float;
+	static const uint32_t BitsPerSample = BITS_PER_SAMPLE;
+	static constexpr float ScaleFloat2Int = ((uint32_t)(1<<(BitsPerSample-1)));
+	static constexpr float ScaleInt2Float = 1.0f/ScaleFloat2Int;
+	static const int BufferSize = BUF_SIZE; // increase to 64 samples to avoid drop outs (at 192 kHz)
 
 public:
 
@@ -46,15 +48,15 @@ public:
 	int readBlock();
 	int writeBlock();
 
-	inline int32_t float2Int(float sample) {
-		sample *= AudioDriver::ScaleFloat2Int;
-		int32_t y = (int32_t)(sample >= 0.5)? sample+1 : sample;
-		// y = constrain(y, -AudioDriver::ScaleFloat2Int, AudioDriver::ScaleFloat2Int-1);
-		return (y << 8);
+	inline int32_t float2Int(float fSample) {
+		fSample = fclamp(fSample, -0.9999999f, 0.9999999f);
+		int32_t y = ScaleFloat2Int * fSample;
+		//Serial.println(y);
+		return y;
 	}
 
-	inline float int2Float(int32_t sample) {
-		return (float)(sample * AudioDriver::ScaleInt2Float);
+	inline float int2Float(int32_t iSample) {
+		return ((float)iSample * ScaleInt2Float * 0.992f);
 	}
 
 	inline float readSample(int n, int channel) {
