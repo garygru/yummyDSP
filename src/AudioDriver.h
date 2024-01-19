@@ -27,7 +27,7 @@ class AudioDriver {
 public:
 	static const uint32_t BitsPerSample = BITS_PER_SAMPLE;
 	static constexpr float ScaleFloat2Int = (uint32_t)(1<<(BitsPerSample-1));
-	static constexpr float ScaleInt2Float = 0,992f/ScaleFloat2Int;
+	static constexpr float ScaleInt2Float = 0.992f/ScaleFloat2Int;
 	static const int BufferSize = BUF_SIZE; 
 
 public:
