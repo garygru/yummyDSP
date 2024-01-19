@@ -6,7 +6,7 @@
  */
 
 #include <Nodes/WaveShaperNode.h>
-
+#include "dspHelpers.h"
 
 WaveShaperNode::WaveShaperNode() {
 	; // be sure to call begin(fs)
@@ -30,8 +30,9 @@ void WaveShaperNode::begin(int sampleRate, int channelCount) {
 
 
 float WaveShaperNode::processSample(float sample, int channel) {
-	interpolator->process();
-	return fasttanh(sample * drive[kCurrent] * 30.f);
+	interpolator->process(); 
+//	extern inline float fast_shape(float x);
+	return fast_shape(sample * drive[kCurrent] * 30.f);
 }
 
 

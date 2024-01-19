@@ -14,7 +14,7 @@
 
 #ifndef WAVELIB
 #define WAVELIB
-
+	
 // ADSR
 class Envelope {
 	enum states {

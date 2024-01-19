@@ -7,6 +7,7 @@
  */
 
 #include <Nodes/FilterNode.h>
+#include "dspHelpers.h"
 
 FilterNode::FilterNode() {
 	; // be sure to call begin(fs)
@@ -24,6 +25,7 @@ FilterNode::~FilterNode() {
 
 void FilterNode::begin(int sampleRate, int channelCount) {
 	fs = sampleRate;
+	div_fs = 1.0f / (float)sampleRate;
 	interpolator = new Interpolator(fs, 50);
 
 	// reset states
@@ -52,9 +54,10 @@ void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool rese
 	//  float A = sqrt(pow(10, dBgain / 20));
 	float w0 = 2 * PI * f0 / fs;
 	
-	float cosW0 = cos(w0);
-	float sinW0 = sin(w0);
-	float alpha = sinW0 / (2 * q); 		// case: Q
+	float sinW0, cosW0;
+//	extern inline void fast_sincos(float x, float* sinRes, float* cosRes);
+	fast_sincos(w0, &sinW0, &cosW0);
+	float alpha = sinW0 / (2.0f * q); 		// case: Q
 	// float alpha = sinW0*sinh( ln(2)/2 * BW * w0/sin(w0) ) // case: BW
 	
 	float a0, a1, a2;
@@ -62,18 +65,18 @@ void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool rese
 	
 	switch (type) {
 		case LPF: //  H(s) = 1 / (s^2 + s/Q + 1)
-			b0 = (1.f - cosW0) / 2.f;
+			b0 = (1.f - cosW0) * 0.5f;
 			b1 = 1.f - cosW0;
-			b2 = (1.f - cosW0) / 2.f;
+			b2 = (1.f - cosW0) * 0.5f;
 			a0 = 1.f + alpha;
 			a1 = -2.f * cosW0;
 			a2 = 1.f - alpha;
 			break;
 			
 		case HPF: //  H(s) = s^2 / (s^2 + s/Q + 1)
-			b0 = (1.f + cosW0) / 2.f;
+			b0 = (1.f + cosW0) * 0.5f;
 			b1 = -(1.f + cosW0);
-			b2 = (1.f + cosW0) / 2.f;
+			b2 = (1.f + cosW0) * 0.5f;
 			a0 = 1.f + alpha;
 			a1 = -2.f * cosW0;
 			a2 = 1.f - alpha;
@@ -93,12 +96,13 @@ void FilterNode::setupFilter(int type, float f0, float q, bool smooth, bool rese
 			a0 = a1 = a2 = 0;
 			break;
 	}
+	float div_a0 = one_div(a0);
 	
-	filterCoeffs[cB0][kTarget] = b0 / a0;
-	filterCoeffs[cB1][kTarget] = b1 / a0;
-	filterCoeffs[cB2][kTarget] = b2 / a0;
-	filterCoeffs[cA1][kTarget] = a1 / a0;
-	filterCoeffs[cA2][kTarget] = a2 / a0;
+	filterCoeffs[cB0][kTarget] = b0 * div_a0;
+	filterCoeffs[cB1][kTarget] = b1 * div_a0;
+	filterCoeffs[cB2][kTarget] = b2 * div_a0;
+	filterCoeffs[cA1][kTarget] = a1 * div_a0;
+	filterCoeffs[cA2][kTarget] = a2 * div_a0;
 	
 	//	ESP_LOGI(TAG, "coeffs: %.5f %.5f %.5f %.5f %.5f %.5f", a0, a1, a2, b0, b1, b2);
 	
@@ -164,8 +168,8 @@ float FilterNode::processSample(float sample, int channel) {
 	
 	// Transposed DF 2:
 	float y = filterCoeffs[cB0][kCurrent] * x + filterStates[0][channel];
-	filterStates[0][channel] = filterCoeffs[cB1][kCurrent] * x - filterCoeffs[cA1][kCurrent] * y + filterStates[1][channel];
-	filterStates[1][channel] = filterCoeffs[cB2][kCurrent] * x - filterCoeffs[cA2][kCurrent] * y;
+	filterStates[0][channel] = filterCoeffs[cB1][kCurrent] * x - filterCoeffs[cA1][kCurrent] * y + filterStates[1][channel] + 1e-30f;
+	filterStates[1][channel] = filterCoeffs[cB2][kCurrent] * x - filterCoeffs[cA2][kCurrent] * y + 1e-30f; // adding TINY fixes some issues
 	
 	interpolator->process();
 	return y;

@@ -14,8 +14,11 @@
 #ifndef DELAYNODE_H
 #define DELAYNODE_H
 
-
+#ifdef BOARD_HAS_PSRAM
+#define MAX_DELAY_LEN (48000) 
+#else
 #define MAX_DELAY_LEN (12000) // 520kB RAM is a show stopper
+#endif
 
 class DelayLine {
 
@@ -31,7 +34,7 @@ public:
 
 protected:
 
-	float buffer[MAX_DELAY_LEN + 1];
+	float *buffer ;
 	int length;
 	int channelCount;
 	int sampleDelay;

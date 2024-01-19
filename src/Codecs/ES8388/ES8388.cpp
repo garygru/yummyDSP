@@ -132,7 +132,8 @@ int ES8388::setup(int fs, int channelCount, int bitClkPin, int lrClkPin, int dat
     Serial.println("Nyambung ke Codec = Sukses/OK");
  	
 	int mclk_fs = 256;//512;
-	i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
+	// i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB); // depricated
+	i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S);
 	int err = setFormat(fs, channelCount, I2S_BITS_PER_SAMPLE_24BIT, comm_fmt, CODEC_I2S_ALIGN, mclk_fs);
 	err += setPins(bitClkPin, lrClkPin, dataOutPin, dataInPin, enablePin);
 	err += start();	

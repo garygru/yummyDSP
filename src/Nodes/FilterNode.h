@@ -13,7 +13,6 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-
 class FilterNode : public AudioNode {
 
 	enum coeffs {
@@ -47,6 +46,7 @@ public:
 
 protected:
 	int fs; // sample rate
+	float div_fs; // fs reciprocal 
 	Interpolator *interpolator;
 
 
