@@ -15,7 +15,7 @@
 #include "driver/i2s.h"
 
 #define BITS_PER_SAMPLE 32 // can be 8, 16, 24 or 32
-#define BUF_SIZE 32 // buffer size in SAMPLES
+#define BUF_SIZE 32 // buffer size in SAMPLES, increase to 64 to avoid drop outs at 192 kHz
 
 enum i2s_alignment {
 	CODEC_I2S_ALIGN = 0,
@@ -26,9 +26,9 @@ class AudioDriver {
 
 public:
 	static const uint32_t BitsPerSample = BITS_PER_SAMPLE;
-	static constexpr float ScaleFloat2Int = ((uint32_t)(1<<(BitsPerSample-1)));
-	static constexpr float ScaleInt2Float = 1.0f/ScaleFloat2Int;
-	static const int BufferSize = BUF_SIZE; // increase to 64 samples to avoid drop outs (at 192 kHz)
+	static constexpr float ScaleFloat2Int = (uint32_t)(1<<(BitsPerSample-1));
+	static constexpr float ScaleInt2Float = 0,992f/ScaleFloat2Int;
+	static const int BufferSize = BUF_SIZE; 
 
 public:
 
@@ -56,7 +56,7 @@ public:
 	}
 
 	inline float int2Float(int32_t iSample) {
-		return ((float)iSample * ScaleInt2Float * 0.992f);
+		return ((float)iSample * ScaleInt2Float);
 	}
 
 	inline float readSample(int n, int channel) {
