@@ -26,7 +26,8 @@ Currently there a just a few nodes implemented (more to come)
 
 - Hipass / Lopass / Bandpass filter
 - Waveshaper / Saturation
-- Delay (still dirty and experimental :)
+- Delay 
+- Reverb
 
 ## Getting Started
 
